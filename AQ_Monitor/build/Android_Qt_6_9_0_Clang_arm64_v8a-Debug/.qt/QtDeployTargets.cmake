@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_appAQ_Monitor_FILE C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug/libappAQ_Monitor_arm64-v8a.so)
+set(__QT_DEPLOY_TARGET_appAQ_Monitor_TYPE MODULE_LIBRARY)

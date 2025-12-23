@@ -1,0 +1,14 @@
+-rootPath
+C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor
+-cmake-output
+-output-file
+C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug/.qt/qml_imports/appAQ_Monitor_conf.cmake
+-importPath
+C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug/AQ_Monitor
+-importPath
+C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug
+-importPath
+C:/Qt/6.9.0/android_arm64_v8a/qml
+-qrcFiles
+C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug/.qt/rcc/qmake_AQ_Monitor.qrc
+C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug/.qt/rcc/appAQ_Monitor_raw_qml_0.qrc
