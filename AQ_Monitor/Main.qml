@@ -1,15 +1,43 @@
 import QtQuick
 import QtQuick.Controls
+import QtPositioning
+import QtCore
 
 Window {
     width: 360
     height: 640
     visible: true
-    title: "HC-42 BLE Demo"
+    title: "AQ Monitor"
+    property string dataIn: ""
+    property double latitude: 0
+    property double longitude: 0
 
-    // Connections{
-    //     target: ble
-    // }
+    Component.onCompleted: {
+        console.log("OS:", Qt.platform.os)
+
+    }
+
+    Connections{
+        target: ble
+        function onReceivedDataChanged(){
+            dataIn += ble.dataReceived() + "\n"
+        }
+    }
+
+    PositionSource {
+        id: gps
+        active: true
+        updateInterval: 2000
+
+        onPositionChanged: {
+            console.log("Latitude:", position.coordinate.latitude)
+            console.log("Longitude:", position.coordinate.longitude)
+            console.log("Accuracy:",position.timestamp)
+            latitude = position.coordinate.latitude
+            longitude = position.coordinate.longitude
+            ble.sendData("location:{lat: "+latitude.toFixed(6)+",lon: "+longitude.toFixed(6)+",}")
+        }
+    }
 
     Column {
         anchors.centerIn: parent
@@ -33,19 +61,24 @@ Window {
 
         Button {
             text: "Send"
-            onClicked: ble.sendData(input.text + "\r\n")
+            onClicked: {
+                ble.sendData(input.text)
+            }
+
         }
 
         Rectangle {
+            id: txtArea
             width: parent.width
             height: 200
             color: "#eeeeee"
             radius: 6
 
+
             ScrollView {
                 anchors.fill: parent
                 Text {
-                    text: ble.receivedData
+                    text: dataIn
                     wrapMode: Text.Wrap
                 }
             }

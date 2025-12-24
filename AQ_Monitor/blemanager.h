@@ -4,12 +4,18 @@
 #include <QObject>
 #include <QtBluetooth>
 
+typedef enum{
+    RECEIVING,
+    SENDING
+}DataDirection;
+
 
 typedef struct Packet{
     QChar type;
-    unsigned int total_len;
-    unsigned int current_len;
-    QChar data[512];
+    uint total_len;
+    uint current_len;
+    QString data;
+    DataDirection dataDirection;
 }Packet;
 
 class BleManager : public QObject
@@ -23,8 +29,9 @@ public:
 
     Q_INVOKABLE void startScan();
     Q_INVOKABLE void sendData(const QString &text);
+    Q_INVOKABLE QString dataReceived(){return packet.data;}
 
-    QString receivedData() const { return m_receivedData; }
+    QString receivedData() const { return packet.data; }//m_receivedData
     QString status() const { return m_status; }
     void requestBlePermissions();
 
@@ -42,6 +49,11 @@ private slots:
     void characteristicChanged(const QLowEnergyCharacteristic &, const QByteArray &value);
     void startBleScan();
     void process_data(QString data);
+    void send_ack(void);
+    void send_nack(void);
+    void send_EOF(void);
+    void sendPacket(QString str);
+    void m_sendData(void);
 
 private:
     void setStatus(const QString &s);
@@ -52,7 +64,7 @@ private:
     QLowEnergyCharacteristic uartChar;
     QBluetoothSocket *socket = nullptr;
 
-    QString m_receivedData;
+    QString m_sendingData;
     QString m_status;
 
     bool m_ready = false;
@@ -65,6 +77,7 @@ private:
     const QBluetoothUuid CCCID = QBluetoothUuid("00002902-0000-1000-8000-00805F9B34FB");
 
     Packet packet;
+    Packet outPacket;
 };
 #endif // BLEMANAGER_H
 

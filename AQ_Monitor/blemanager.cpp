@@ -11,65 +11,75 @@
 #include <QBluetoothSocket>
 
 
-void BleManager::requestBlePermissions()
-{
-    QStringList perms = {
-        "android.permission.BLUETOOTH",
-        "android.permission.BLUETOOTH_ADMIN",
-        "android.permission.BLUETOOTH_SCAN",
-        "android.permission.BLUETOOTH_CONNECT",
-        "android.permission.ACCESS_FINE_LOCATION"
-    };
+#define HEADER_PACKET '~'
+#define DATA_PACKET '>'
+#define ACK_PACKET '<'
+#define NACK_PACKET '?'
+#define EOF_PACKET '@'
 
-    // Get the activity
-    QJniObject activity = QJniObject::callStaticObjectMethod(
-        "org/qtproject/qt5/android/QtNative",
-        "activity",
-        "()Landroid/app/Activity;"
-        );
+#define MAX_DATA_LEN 30
 
-    if (!activity.isValid()) {
-        qWarning() << "Failed to get Qt activity!";
-        return;
-    }
 
-    QJniEnvironment env;
 
-    // Create Java String array
-    jclass stringClass = env->FindClass("java/lang/String");
-    if (!stringClass) {
-        qWarning() << "Failed to find java/lang/String";
-        return;
-    }
+// void BleManager::requestBlePermissions()
+// {
+//     QStringList perms = {
+//         "android.permission.BLUETOOTH",
+//         "android.permission.BLUETOOTH_ADMIN",
+//         "android.permission.BLUETOOTH_SCAN",
+//         "android.permission.BLUETOOTH_CONNECT",
+//         "android.permission.ACCESS_FINE_LOCATION"
+//     };
 
-    jobjectArray permissionArray = env->NewObjectArray(perms.size(), stringClass, nullptr);
-    for (int i = 0; i < perms.size(); ++i) {
-        jstring jstr = env->NewStringUTF(perms[i].toUtf8().constData());
-        env->SetObjectArrayElement(permissionArray, i, jstr);
-        env->DeleteLocalRef(jstr);
-    }
+//     // Get the activity
+//     QJniObject activity = QJniObject::callStaticObjectMethod(
+//         "org/qtproject/qt5/android/QtNative",
+//         "activity",
+//         "()Landroid/app/Activity;"
+//         );
 
-    // Use activity.requestPermissions(String[] permissions, int requestCode)
-    jclass activityClass = env->GetObjectClass(activity.object<jobject>());
-    if (!activityClass) {
-        qWarning() << "Failed to get activity class";
-        return;
-    }
+//     if (!activity.isValid()) {
+//         qWarning() << "Failed to get Qt activity!";
+//         return;
+//     }
 
-    jmethodID requestPermissionsMethod = env->GetMethodID(
-        activityClass,
-        "requestPermissions",
-        "([Ljava/lang/String;I)V"
-        );
+//     QJniEnvironment env;
 
-    if (!requestPermissionsMethod) {
-        qWarning() << "requestPermissions method not found!";
-        return;
-    }
+//     // Create Java String array
+//     jclass stringClass = env->FindClass("java/lang/String");
+//     if (!stringClass) {
+//         qWarning() << "Failed to find java/lang/String";
+//         return;
+//     }
 
-    env->CallVoidMethod(activity.object<jobject>(), requestPermissionsMethod, permissionArray, 0);
-    env->DeleteLocalRef(permissionArray);
-}
+//     jobjectArray permissionArray = env->NewObjectArray(perms.size(), stringClass, nullptr);
+//     for (int i = 0; i < perms.size(); ++i) {
+//         jstring jstr = env->NewStringUTF(perms[i].toUtf8().constData());
+//         env->SetObjectArrayElement(permissionArray, i, jstr);
+//         env->DeleteLocalRef(jstr);
+//     }
+
+//     // Use activity.requestPermissions(String[] permissions, int requestCode)
+//     jclass activityClass = env->GetObjectClass(activity.object<jobject>());
+//     if (!activityClass) {
+//         qWarning() << "Failed to get activity class";
+//         return;
+//     }
+
+//     jmethodID requestPermissionsMethod = env->GetMethodID(
+//         activityClass,
+//         "requestPermissions",
+//         "([Ljava/lang/String;I)V"
+//         );
+
+//     if (!requestPermissionsMethod) {
+//         qWarning() << "requestPermissions method not found!";
+//         return;
+//     }
+
+//     env->CallVoidMethod(activity.object<jobject>(), requestPermissionsMethod, permissionArray, 0);
+//     env->DeleteLocalRef(permissionArray);
+// }
 
 void requestQtBlePermission(QObject *context, std::function<void()> onGranted)
 {
@@ -104,6 +114,10 @@ BleManager::BleManager(QObject *parent)
 {
     discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
     discoveryAgent->setLowEnergyDiscoveryTimeout(5000);
+    packet.current_len = 0;
+    packet.data = "";
+    packet.total_len = 0;
+    packet.type = ' ';
 }
 
 
@@ -208,16 +222,6 @@ void BleManager::serviceStateChanged(QLowEnergyService::ServiceState s)
     }
 
     setStatus("Ready");
-    // QString text = "PING\r\n";
-    // QTimer *timer = new QTimer(this);
-    // connect(timer, &QTimer::timeout, this, [=]() {
-    //     uartService->writeCharacteristic(
-    //         uartChar,
-    //         text.toUtf8(),
-    //         QLowEnergyService::WriteWithoutResponse
-    //         );
-    // });
-    // timer->start(1000);
 
     qDebug() << "Enable notifications";
     QLowEnergyDescriptor notificationDesc = uartChar.descriptor(
@@ -230,11 +234,27 @@ void BleManager::serviceStateChanged(QLowEnergyService::ServiceState s)
 
 }
 
+void BleManager::send_ack(void){
+    QString data = "*<00#";
+    sendPacket(data);
+}
+void BleManager::send_nack(void){
+    QString data = "*?00#";
+    sendPacket(data);
+}
+void BleManager::send_EOF(void){
+    QString data = "*@00#";
+    sendPacket(data);
+}
+
 void BleManager::process_data(QString data){
     if(data.startsWith('*') && data.endsWith('#')){
         packet.type = data[1];
-        if(packet.type == '~'){
+        if(packet.type == HEADER_PACKET){
             qDebug()<<"Header found";
+            packet.current_len = 0;
+            packet.data = "";
+            packet.total_len = 0;
             QString xLen = "0x"+QString(data[2]) + QString(data[3]);
             qDebug()<<"Len:"<<xLen;
             uint xlen= xLen.toUInt(nullptr, 16);
@@ -244,27 +264,99 @@ void BleManager::process_data(QString data){
             }
             packet.total_len = Len.toUInt();
             qDebug()<<"Total Len: "<<packet.total_len;
+            send_ack();
         }
-        emit receivedDataChanged();
+        else if(packet.type == DATA_PACKET){
+            qDebug()<<"DATA found";
+            QString xLen = "0x"+QString(data[2]) + QString(data[3]);
+            qDebug()<<"HEX Len:"<<xLen;
+            uint xlen= xLen.toUInt(nullptr, 16);
+            qDebug()<<"Len:"<<xlen;
+            QString sdata = data.sliced(4,xlen);
+            qDebug()<<"Received: "<<sdata;
+            packet.current_len += xlen;
+            packet.data += sdata;
+            send_ack();
+        }
+        else if(packet.type == EOF_PACKET){
+            qDebug()<<"End of File found";
+            qDebug()<<"File Len: "<<packet.current_len;
+            if(packet.total_len == packet.current_len){
+                qDebug()<<"Received successfully";
+               emit receivedDataChanged();
+            }
+
+        }
+        else if(packet.type == ACK_PACKET){
+            qDebug()<<"ACK found";
+            if(outPacket.total_len == outPacket.current_len){
+                qDebug()<<"Done sending data";
+                send_EOF();
+            }else{
+                m_sendData();
+            }
+        }
+        else if(packet.type == NACK_PACKET){
+            qDebug()<<"ACK found";
+        }
+
     }
 }
 
 void BleManager::characteristicChanged(const QLowEnergyCharacteristic &,
                                        const QByteArray &value)
-{
-    m_receivedData = QString::fromUtf8(value);
+{ 
     qDebug()<<"Raw: "<<value;
-    process_data(m_receivedData);
+    process_data(QString::fromUtf8(value));
 }
 
 void BleManager::sendData(const QString &text)
 {
+    outPacket.data = text;
+    outPacket.total_len = text.length();
+    outPacket.current_len = 0;
+
+    // QString hexStr = QString::number(outPacket.total_len, 16).toUpper();
+    QString hexStr = QString("%1").arg(outPacket.total_len, 2, 16, QLatin1Char('0')).toUpper();
+
+    QString headerStr = "*" + QString(HEADER_PACKET) + hexStr + QString::number(outPacket.total_len) + "#";
     if (!uartService || !uartChar.isValid())
         return;
-    qDebug()<<"Sending: "<<text;
+    qDebug()<<"Sending: "<<headerStr;
     uartService->writeCharacteristic(
         uartChar,
-        text.toUtf8(),
+        headerStr.toUtf8(),
+        QLowEnergyService::WriteWithoutResponse
+        );
+}
+
+void BleManager::m_sendData(void){
+    QString sub = "";
+    if((outPacket.total_len-outPacket.current_len) > MAX_DATA_LEN){
+        //memcpy(tempstr, outPacket.data + outPacket.current_len, MAX_DATA_LEN);
+        sub = outPacket.data.mid(outPacket.current_len, MAX_DATA_LEN);
+        outPacket.current_len += MAX_DATA_LEN;
+    }else{
+        //memcpy(tempstr, outPacket.data + outPacket.current_len, outPacket.total_len - outPacket.current_len);
+        sub = outPacket.data.mid(outPacket.current_len, outPacket.total_len - outPacket.current_len);
+        outPacket.current_len += outPacket.total_len - outPacket.current_len;
+    }
+
+    qDebug()<<"sub: "<<sub;
+
+    // QString hexStr = QString::number(sub.length(), 16).toUpper();
+    QString hexStr = QString("%1").arg(sub.length(), 2, 16, QLatin1Char('0')).toUpper();
+    QString outStr = "*" + QString(DATA_PACKET) + hexStr + sub + "#";
+    sendPacket(outStr);
+}
+
+void BleManager::sendPacket(QString str){
+    if (!uartService || !uartChar.isValid())
+        return;
+    qDebug()<<"Sending: "<<str;
+    uartService->writeCharacteristic(
+        uartChar,
+        str.toUtf8(),
         QLowEnergyService::WriteWithoutResponse
         );
 }

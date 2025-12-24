@@ -10,7 +10,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Qml
     Quick
     Bluetooth
-    # AndroidExtras
+    Positioning
 )
 
 qt_standard_project_setup(REQUIRES 6.8)
@@ -46,7 +46,7 @@ target_link_libraries(appAQ_Monitor
     Qt6::Core
     Qt6::Gui
     Qt6::Bluetooth
-    # Qt6::AndroidExtras
+    Qt6::Positioning
 )
 
 include(GNUInstallDirs)
