@@ -28,6 +28,7 @@ qt_add_qml_module(appAQ_Monitor
         Main.qml
         SOURCES blemanager.h blemanager.cpp
         SOURCES
+        SOURCES filedownloader.h filedownloader.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

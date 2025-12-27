@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "blemanager.h"
+#include "filedownloader.h"
 
 
 
@@ -13,22 +14,12 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    // // Request Android runtime permissions
-    // QList<QString> permissions;
-    // permissions << "android.permission.BLUETOOTH"
-    //             << "android.permission.BLUETOOTH_ADMIN"
-    //             << "android.permission.BLUETOOTH_SCAN"
-    //             << "android.permission.BLUETOOTH_CONNECT"
-    //             << "android.permission.ACCESS_FINE_LOCATION";
-
-    // QtAndroid::requestPermissionsSync(permissions);
-
-    // requestBlePermissions(); // request runtime BLE permissions safely
-
     BleManager ble;
+    FileDownloader fileD;
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ble", &ble);
+    engine.rootContext()->setContextProperty("fileDownloader", &fileD);
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,

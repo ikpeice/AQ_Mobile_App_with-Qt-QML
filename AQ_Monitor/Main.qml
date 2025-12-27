@@ -4,8 +4,8 @@ import QtPositioning
 import QtCore
 
 Window {
-    width: 360
-    height: 640
+    width: 720
+    height: 1438
     visible: true
     title: "AQ Monitor"
     property string dataIn: ""
@@ -14,12 +14,23 @@ Window {
 
     Component.onCompleted: {
         console.log("OS:", Qt.platform.os)
+    }
 
+    Connections{
+        target: fileDownloader
+
+        function onPercentageProgressChanged(){
+
+        }
     }
 
     Connections{
         target: ble
         function onReceivedDataChanged(){
+            if(ble.dataReceived() === "GPS-200"){
+                gps.stop()
+            }
+
             dataIn += ble.dataReceived() + "\n"
         }
     }
@@ -27,7 +38,7 @@ Window {
     PositionSource {
         id: gps
         active: true
-        updateInterval: 2000
+        updateInterval: 5000
 
         onPositionChanged: {
             console.log("Latitude:", position.coordinate.latitude)
@@ -37,12 +48,22 @@ Window {
             longitude = position.coordinate.longitude
             ble.sendData("location:{lat: "+latitude.toFixed(6)+",lon: "+longitude.toFixed(6)+",}")
         }
+
+        onActiveChanged: {
+            console.log("GPS: ", gps.active)
+            if(gps.active === false){
+                console.log("GPS not active")
+            }
+
+        }
     }
 
     Column {
-        anchors.centerIn: parent
+        anchors.centerIn: scrollView
         spacing: 10
         width: parent.width * 0.9
+        anchors.verticalCenterOffset: 80
+        anchors.horizontalCenterOffset: -6
 
         Text {
             text: ble.status
@@ -70,7 +91,7 @@ Window {
         Rectangle {
             id: txtArea
             width: parent.width
-            height: 200
+            height: 100
             color: "#eeeeee"
             radius: 6
 
@@ -83,5 +104,38 @@ Window {
                 }
             }
         }
+        Rectangle {
+            id: downloadSection
+            width: parent.width
+            height: 50
+
+            Row{
+                id: rowID
+                anchors.fill: parent
+                Button {
+                    id: firmButton
+                    text: "Load Firmware"
+                    onClicked: {
+                        fileDownloader.startDownload("d");
+                    }
+                }
+                ProgressBar {
+                    id: progressBar
+                    width: (parent.width - firmButton.width)*0.85
+                    anchors.verticalCenter: parent.verticalCenter
+                    from: 0
+                    to: 100
+                    value: fileDownloader.percentageProgress   // example value
+                }
+                Text {
+                    id: progressText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: fileDownloader.percentageProgress + "%"
+                }
+            }
+
+
+        }
+
     }
 }

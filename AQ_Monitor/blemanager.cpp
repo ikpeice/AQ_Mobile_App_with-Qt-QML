@@ -17,69 +17,9 @@
 #define NACK_PACKET '?'
 #define EOF_PACKET '@'
 
-#define MAX_DATA_LEN 30
+#define MAX_DATA_LEN 220
 
 
-
-// void BleManager::requestBlePermissions()
-// {
-//     QStringList perms = {
-//         "android.permission.BLUETOOTH",
-//         "android.permission.BLUETOOTH_ADMIN",
-//         "android.permission.BLUETOOTH_SCAN",
-//         "android.permission.BLUETOOTH_CONNECT",
-//         "android.permission.ACCESS_FINE_LOCATION"
-//     };
-
-//     // Get the activity
-//     QJniObject activity = QJniObject::callStaticObjectMethod(
-//         "org/qtproject/qt5/android/QtNative",
-//         "activity",
-//         "()Landroid/app/Activity;"
-//         );
-
-//     if (!activity.isValid()) {
-//         qWarning() << "Failed to get Qt activity!";
-//         return;
-//     }
-
-//     QJniEnvironment env;
-
-//     // Create Java String array
-//     jclass stringClass = env->FindClass("java/lang/String");
-//     if (!stringClass) {
-//         qWarning() << "Failed to find java/lang/String";
-//         return;
-//     }
-
-//     jobjectArray permissionArray = env->NewObjectArray(perms.size(), stringClass, nullptr);
-//     for (int i = 0; i < perms.size(); ++i) {
-//         jstring jstr = env->NewStringUTF(perms[i].toUtf8().constData());
-//         env->SetObjectArrayElement(permissionArray, i, jstr);
-//         env->DeleteLocalRef(jstr);
-//     }
-
-//     // Use activity.requestPermissions(String[] permissions, int requestCode)
-//     jclass activityClass = env->GetObjectClass(activity.object<jobject>());
-//     if (!activityClass) {
-//         qWarning() << "Failed to get activity class";
-//         return;
-//     }
-
-//     jmethodID requestPermissionsMethod = env->GetMethodID(
-//         activityClass,
-//         "requestPermissions",
-//         "([Ljava/lang/String;I)V"
-//         );
-
-//     if (!requestPermissionsMethod) {
-//         qWarning() << "requestPermissions method not found!";
-//         return;
-//     }
-
-//     env->CallVoidMethod(activity.object<jobject>(), requestPermissionsMethod, permissionArray, 0);
-//     env->DeleteLocalRef(permissionArray);
-// }
 
 void requestQtBlePermission(QObject *context, std::function<void()> onGranted)
 {
