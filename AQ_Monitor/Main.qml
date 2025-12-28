@@ -20,7 +20,7 @@ Window {
         target: fileDownloader
 
         function onPercentageProgressChanged(){
-
+            progressBar.value =fileDownloader.percentageProgress().toFixed(2)
         }
     }
 
@@ -122,15 +122,16 @@ Window {
                 ProgressBar {
                     id: progressBar
                     width: (parent.width - firmButton.width)*0.85
+                    height: 20
                     anchors.verticalCenter: parent.verticalCenter
                     from: 0
                     to: 100
-                    value: fileDownloader.percentageProgress   // example value
+                    value: 0.00   // example value
                 }
                 Text {
                     id: progressText
                     anchors.verticalCenter: parent.verticalCenter
-                    text: fileDownloader.percentageProgress + "%"
+                    text: progressBar.value + "%"
                 }
             }
 

@@ -13,7 +13,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Positioning
 )
 
-qt_standard_project_setup(REQUIRES 6.8)
+qt_standard_project_setup(REQUIRES 6.10)
 
 qt_add_executable(appAQ_Monitor
     main.cpp
