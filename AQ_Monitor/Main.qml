@@ -59,11 +59,13 @@ Window {
     }
 
     Column {
-        anchors.centerIn: scrollView
+        anchors.centerIn: parent
         spacing: 10
-        width: parent.width * 0.9
-        anchors.verticalCenterOffset: 80
-        anchors.horizontalCenterOffset: -6
+        width: parent.width *0.9
+        anchors{
+            leftMargin: 20
+            rightMargin: 20
+        }
 
         Text {
             text: ble.status
@@ -123,7 +125,10 @@ Window {
                     id: progressBar
                     width: (parent.width - firmButton.width)*0.85
                     height: 20
-                    anchors.verticalCenter: parent.verticalCenter
+                    anchors{
+                        margins: 10
+                        verticalCenter: parent.verticalCenter
+                    }
                     from: 0
                     to: 100
                     value: 0.00   // example value

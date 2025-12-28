@@ -33,11 +33,11 @@ void FileDownloader::onFinished(QNetworkReply *reply)
         reply->deleteLater();
         return;
     }
-    QString json =
-        "{\"update_available\": true, "
-        "\"total_chunks\": 240, "
-        "\"total_size\": 122748.0, "
-        "\"version\": \"1.1.6\"}\n";
+    // QString json =
+    //     "{\"update_available\": true, "
+    //     "\"total_chunks\": 240, "
+    //     "\"total_size\": 122748.0, "
+    //     "\"version\": \"1.1.6\"}\n";
 
 
     if(downloadFlag == false){
