@@ -49,7 +49,7 @@ void requestQtBlePermission(QObject *context, std::function<void()> onGranted)
     }
 }
 
-BleManager::BleManager(QObject *parent)
+BleManager::BleManager(QObject *parent, FileDownloader *_fileDownloader)
     : QObject(parent)
 {
     discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -58,6 +58,15 @@ BleManager::BleManager(QObject *parent)
     packet.data = "";
     packet.total_len = 0;
     packet.type = ' ';
+    fileDownloader = _fileDownloader;
+    connect(fileDownloader, &FileDownloader::chunckReady, this, [this]{
+        if(bleStatus == true){
+            sendData(fileDownloader->chunckFile);
+        }else{
+            qDebug()<<"[BLE]: Disconnected";
+        }
+
+    });
 }
 
 
@@ -120,6 +129,7 @@ void BleManager::scanFinished()
 
 void BleManager::controllerConnected()
 {
+    bleStatus = true;
     setStatus("Connected, discovering services...");
     controller->discoverServices();
 }
@@ -127,6 +137,7 @@ void BleManager::controllerConnected()
 void BleManager::controllerDisconnected()
 {
     setStatus("Disconnected");
+    bleStatus = false;
 }
 
 void BleManager::serviceScanDone()

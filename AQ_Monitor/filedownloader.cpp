@@ -51,7 +51,15 @@ void FileDownloader::onFinished(QNetworkReply *reply)
         }
 
     }else{
-        qDebug() <<reply->readAll();
+        QString rcv = reply->readAll();
+        qDebug() << rcv;
+        if(rcv.contains("aa") && rcv.contains("bb")){
+            qDebug()<<"file correct";
+            chunckFile = rcv;
+            emit chunckReady();
+        }else{
+            qDebug()<<"file error";
+        }
         if(currentFile < updateInfo.totalChunks){
             currentFile +=1;
             downloadFile(currentFile);

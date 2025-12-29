@@ -106,24 +106,30 @@ Window {
                 }
             }
         }
+
+        Button {
+            id: firmButton
+            text: "Load Firmware"
+            onClicked: {
+                fileDownloader.startDownload("d");
+            }
+        }
         Rectangle {
             id: downloadSection
             width: parent.width
             height: 50
+            border.color: "gray"
+            border.width: 5
+            radius: 20
 
             Row{
                 id: rowID
-                anchors.fill: parent
-                Button {
-                    id: firmButton
-                    text: "Load Firmware"
-                    onClicked: {
-                        fileDownloader.startDownload("d");
-                    }
-                }
+                anchors.centerIn: downloadSection
+                spacing: 20
+
                 ProgressBar {
                     id: progressBar
-                    width: (parent.width - firmButton.width)*0.85
+                    width: (downloadSection.width)*0.85
                     height: 20
                     anchors{
                         margins: 10
@@ -137,6 +143,8 @@ Window {
                     id: progressText
                     anchors.verticalCenter: parent.verticalCenter
                     text: progressBar.value + "%"
+                    font.bold: true
+                    font.pixelSize: 20
                 }
             }
 

@@ -28,8 +28,12 @@ public:
 
     Q_INVOKABLE double percentageProgress() const {return downloadProgress;}
 
+public:
+    QString chunckFile = "";
+
 signals:
-    void downloadFinished(const QString &filePath);
+    void downloadFinished();
+    void chunckReady();
     void downloadError(const QString &error);
     void percentageProgressChanged();
 

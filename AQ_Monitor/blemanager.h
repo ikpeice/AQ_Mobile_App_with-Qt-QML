@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtBluetooth>
+#include "filedownloader.h"
 
 typedef enum{
     RECEIVING,
@@ -25,7 +26,7 @@ class BleManager : public QObject
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
 
 public:
-    explicit BleManager(QObject *parent = nullptr);
+    explicit BleManager(QObject *parent = nullptr, FileDownloader *_fileDownloader = nullptr);
 
     Q_INVOKABLE void startScan();
     Q_INVOKABLE void sendData(const QString &text);
@@ -67,8 +68,12 @@ private:
     QString m_sendingData;
     QString m_status;
 
+    bool bleStatus = false;
+
     bool m_ready = false;
     bool m_dataAvailable = false;
+
+    FileDownloader* fileDownloader = nullptr;
 
     const QBluetoothUuid UART_SERVICE_UUID =
         QBluetoothUuid("0000FFE0-0000-1000-8000-00805F9B34FB");

@@ -14,8 +14,9 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    BleManager ble;
-    FileDownloader fileD;
+    FileDownloader fileD(nullptr);
+    BleManager ble(nullptr, &fileD);
+
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ble", &ble);
