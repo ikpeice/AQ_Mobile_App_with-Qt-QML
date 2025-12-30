@@ -16,13 +16,15 @@ FileDownloader::FileDownloader(QObject *parent)
 
 void FileDownloader::checkOTA(QString _class)
 {
+    downloadFlag = false;
     QNetworkRequest request((QUrl("http://device.weatherdata.africa/ota/check?type=a&class="+_class)));
     manager.get(request);
 }
 
-void FileDownloader::downloadFile(uint fileNumber)
+void FileDownloader::downloadFile(void)
 {
-    QNetworkRequest request((QUrl("http://device.weatherdata.africa/ota/download/"+QString::number(fileNumber)+"?type=a&class="+deviceClass)));
+    currentFile +=1;
+    QNetworkRequest request((QUrl("http://device.weatherdata.africa/ota/download/"+QString::number(currentFile)+"?type=a&class="+deviceClass)));
     manager.get(request);
 }
 
@@ -33,26 +35,23 @@ void FileDownloader::onFinished(QNetworkReply *reply)
         reply->deleteLater();
         return;
     }
-    // QString json =
-    //     "{\"update_available\": true, "
-    //     "\"total_chunks\": 240, "
-    //     "\"total_size\": 122748.0, "
-    //     "\"version\": \"1.1.6\"}\n";
 
 
     if(downloadFlag == false){
-        //updateInfo = decodeUpdateJson(QString(reply->readAll()));
-        if(parseJson(reply->readAll())){
+        QString json = reply->readAll();
+        if(parseJson(json)){
             if(updateInfo.updateAvailable){
                 downloadFlag = true;
-                currentFile = 1;
-                downloadFile(currentFile);
+                //currentFile = 1;
+                //downloadFile();
+                chunckFile = "{ota: h,"+json+"}";
+                emit headerFound();
             }
         }
 
     }else{
         QString rcv = reply->readAll();
-        qDebug() << rcv;
+        //qDebug() << rcv;
         if(rcv.contains("aa") && rcv.contains("bb")){
             qDebug()<<"file correct";
             chunckFile = rcv;
@@ -60,9 +59,10 @@ void FileDownloader::onFinished(QNetworkReply *reply)
         }else{
             qDebug()<<"file error";
         }
+
         if(currentFile < updateInfo.totalChunks){
-            currentFile +=1;
-            downloadFile(currentFile);
+            // currentFile +=1;
+            // downloadFile(currentFile);
         }else{
             qDebug()<<"Download Complete";
             downloadFlag = false;

@@ -58,6 +58,15 @@ BleManager::BleManager(QObject *parent, FileDownloader *_fileDownloader)
     packet.data = "";
     packet.total_len = 0;
     packet.type = ' ';
+    packet.status = NONE;
+
+    outPacket.current_len = 0;
+    outPacket.data = "";
+    outPacket.total_len = 0;
+    outPacket.type = ' ';
+    outPacket.status = NONE;
+
+
     fileDownloader = _fileDownloader;
     connect(fileDownloader, &FileDownloader::chunckReady, this, [this]{
         if(bleStatus == true){
@@ -66,6 +75,10 @@ BleManager::BleManager(QObject *parent, FileDownloader *_fileDownloader)
             qDebug()<<"[BLE]: Disconnected";
         }
 
+    });
+
+    connect(fileDownloader, &FileDownloader::headerFound, this, [this](){
+        sendData(fileDownloader->chunckFile);
     });
 }
 
@@ -93,11 +106,16 @@ void BleManager::startBleScan()
 
 void BleManager::startScan()
 {
-    requestQtBlePermission(this, [this]() {
-        setStatus("Scanning...");
-        // discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
-        startBleScan();
-    });
+    if(bleStatus == true){
+        controller->disconnectFromDevice();
+    }else{
+        requestQtBlePermission(this, [this]() {
+            setStatus("Scanning...");
+            // discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+            startBleScan();
+        });
+    }
+
 }
 
 void BleManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
@@ -125,6 +143,7 @@ void BleManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
 void BleManager::scanFinished()
 {
     setStatus("Scan finished");
+    retryScan();
 }
 
 void BleManager::controllerConnected()
@@ -138,7 +157,17 @@ void BleManager::controllerDisconnected()
 {
     setStatus("Disconnected");
     bleStatus = false;
+    retryScan();
 }
+
+void BleManager::retryScan()
+{
+    QTimer::singleShot(4000, this, [this]() {
+        // discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+        startBleScan();
+    });
+}
+
 
 void BleManager::serviceScanDone()
 {
@@ -203,6 +232,7 @@ void BleManager::process_data(QString data){
         packet.type = data[1];
         if(packet.type == HEADER_PACKET){
             qDebug()<<"Header found";
+            packet.status = RECEIVING;
             packet.current_len = 0;
             packet.data = "";
             packet.total_len = 0;
@@ -220,30 +250,68 @@ void BleManager::process_data(QString data){
         else if(packet.type == DATA_PACKET){
             qDebug()<<"DATA found";
             QString xLen = "0x"+QString(data[2]) + QString(data[3]);
-            qDebug()<<"HEX Len:"<<xLen;
+            //qDebug()<<"HEX Len:"<<xLen;
             uint xlen= xLen.toUInt(nullptr, 16);
-            qDebug()<<"Len:"<<xlen;
+            //qDebug()<<"Len:"<<xlen;
             QString sdata = data.sliced(4,xlen);
-            qDebug()<<"Received: "<<sdata;
+            //qDebug()<<"Received: "<<sdata;
             packet.current_len += xlen;
             packet.data += sdata;
             send_ack();
         }
         else if(packet.type == EOF_PACKET){
-            qDebug()<<"End of File found";
-            qDebug()<<"File Len: "<<packet.current_len;
+            packet.status = NONE;
             if(packet.total_len == packet.current_len){
-                qDebug()<<"Received successfully";
-               emit receivedDataChanged();
+                qDebug()<<"Received: "<<packet.data<<" successfully";
+                if(packet.data.contains("[OTA]")){
+                    if(packet.data.contains("200 OK")){
+                        if(fileDownloader->updateInfo.totalChunks == fileDownloader->currentFile){
+                            qDebug()<<"Done";
+                            emit receivedDataChanged();
+                        }else{
+                            fileDownloader->downloadFile();
+                        }
+
+                    }else if(packet.data.contains("ERROR")){
+                        qDebug()<<"OTA error occured";
+                    }
+                }
+                else if(packet.data.contains("flashing")){
+                    QJsonParseError error;
+                    QJsonDocument doc = QJsonDocument::fromJson(
+                        packet.data.toUtf8(), &error);
+
+                    if (error.error != QJsonParseError::NoError) {
+                        qWarning() << "JSON parse error:" << error.errorString();
+                        return;
+                    }
+
+                    if (!doc.isObject()) {
+                        qWarning() << "JSON is not an object";
+                        return;
+                    }
+
+                    QJsonObject obj = doc.object();
+
+                    flashingProgress = obj.contains("flashing")? obj.value("flashing").toDouble(): 0.0;
+                    emit flashProgressChanged();
+                }
+                else{
+                    emit receivedDataChanged();
+                }
+
+            }else{
+                qDebug()<<"File currupted";
             }
 
         }
         else if(packet.type == ACK_PACKET){
             qDebug()<<"ACK found";
-            if(outPacket.total_len == outPacket.current_len){
+            if(outPacket.status == SENDING && (outPacket.total_len == outPacket.current_len)){
                 qDebug()<<"Done sending data";
+                outPacket.status = NONE;
                 send_EOF();
-            }else{
+            }else if(outPacket.status == SENDING){
                 m_sendData();
             }
         }
@@ -266,9 +334,11 @@ void BleManager::sendData(const QString &text)
     outPacket.data = text;
     outPacket.total_len = text.length();
     outPacket.current_len = 0;
+    outPacket.status = SENDING;
 
-    // QString hexStr = QString::number(outPacket.total_len, 16).toUpper();
-    QString hexStr = QString("%1").arg(outPacket.total_len, 2, 16, QLatin1Char('0')).toUpper();
+
+    //QString hexStr = QString::number(QString::number(outPacket.total_len).length());
+    QString hexStr = QString("%1").arg(QString::number(outPacket.total_len).length(), 2, 16, QLatin1Char('0')).toUpper();
 
     QString headerStr = "*" + QString(HEADER_PACKET) + hexStr + QString::number(outPacket.total_len) + "#";
     if (!uartService || !uartChar.isValid())
@@ -284,16 +354,14 @@ void BleManager::sendData(const QString &text)
 void BleManager::m_sendData(void){
     QString sub = "";
     if((outPacket.total_len-outPacket.current_len) > MAX_DATA_LEN){
-        //memcpy(tempstr, outPacket.data + outPacket.current_len, MAX_DATA_LEN);
         sub = outPacket.data.mid(outPacket.current_len, MAX_DATA_LEN);
         outPacket.current_len += MAX_DATA_LEN;
     }else{
-        //memcpy(tempstr, outPacket.data + outPacket.current_len, outPacket.total_len - outPacket.current_len);
         sub = outPacket.data.mid(outPacket.current_len, outPacket.total_len - outPacket.current_len);
         outPacket.current_len += outPacket.total_len - outPacket.current_len;
     }
 
-    qDebug()<<"sub: "<<sub;
+    //qDebug()<<"sub: "<<sub;
 
     // QString hexStr = QString::number(sub.length(), 16).toUpper();
     QString hexStr = QString("%1").arg(sub.length(), 2, 16, QLatin1Char('0')).toUpper();
@@ -304,7 +372,7 @@ void BleManager::m_sendData(void){
 void BleManager::sendPacket(QString str){
     if (!uartService || !uartChar.isValid())
         return;
-    qDebug()<<"Sending: "<<str;
+    //qDebug()<<"Sending: "<<str;
     uartService->writeCharacteristic(
         uartChar,
         str.toUtf8(),

@@ -27,33 +27,36 @@ public:
     }
 
     Q_INVOKABLE double percentageProgress() const {return downloadProgress;}
+    void downloadFile(void);
+    void checkOTA(QString _class);
 
 public:
     QString chunckFile = "";
+    UpdateInfo updateInfo;
+    double currentFile = 0;
 
 signals:
     void downloadFinished();
     void chunckReady();
+    void headerFound();
     void downloadError(const QString &error);
     void percentageProgressChanged();
 
 private slots:
     void onFinished(QNetworkReply *reply);
-    void downloadFile(uint fileNumber);
-    void checkOTA(QString _class);
+
     bool parseJson(const QString &jsonString);
     // UpdateInfo decodeUpdateJson(const QString json);
 
 private:
     QNetworkAccessManager manager;
-    QString targetPath;
+
     QString deviceClass;
     float downloadProgress = 0.00;
     uint totalFile = 0;
-    double currentFile = 0;
+
     bool downloadFlag = false;
 
-    UpdateInfo updateInfo;
 
 };
 

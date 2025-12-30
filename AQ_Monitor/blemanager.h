@@ -6,6 +6,7 @@
 #include "filedownloader.h"
 
 typedef enum{
+    NONE,
     RECEIVING,
     SENDING
 }DataDirection;
@@ -16,7 +17,7 @@ typedef struct Packet{
     uint total_len;
     uint current_len;
     QString data;
-    DataDirection dataDirection;
+    DataDirection status;
 }Packet;
 
 class BleManager : public QObject
@@ -31,6 +32,7 @@ public:
     Q_INVOKABLE void startScan();
     Q_INVOKABLE void sendData(const QString &text);
     Q_INVOKABLE QString dataReceived(){return packet.data;}
+    Q_INVOKABLE double flashProgressReceived(){return flashingProgress;}
 
     QString receivedData() const { return packet.data; }//m_receivedData
     QString status() const { return m_status; }
@@ -39,6 +41,7 @@ public:
 signals:
     void receivedDataChanged();
     void statusChanged();
+    void flashProgressChanged();
 
 private slots:
     void deviceDiscovered(const QBluetoothDeviceInfo &info);
@@ -55,6 +58,7 @@ private slots:
     void send_EOF(void);
     void sendPacket(QString str);
     void m_sendData(void);
+    void retryScan();
 
 private:
     void setStatus(const QString &s);
@@ -65,10 +69,12 @@ private:
     QLowEnergyCharacteristic uartChar;
     QBluetoothSocket *socket = nullptr;
 
+
     QString m_sendingData;
     QString m_status;
 
     bool bleStatus = false;
+    double flashingProgress = 0.00;
 
     bool m_ready = false;
     bool m_dataAvailable = false;

@@ -33,6 +33,10 @@ Window {
 
             dataIn += ble.dataReceived() + "\n"
         }
+
+        function onFlashProgressChanged(){
+            flashProgressBar.value = ble.flashProgressReceived()
+        }
     }
 
     PositionSource {
@@ -117,35 +121,72 @@ Window {
         Rectangle {
             id: downloadSection
             width: parent.width
-            height: 50
+            height: 100
             border.color: "gray"
-            border.width: 5
-            radius: 20
+            border.width: 1
+            radius: 10
 
-            Row{
-                id: rowID
-                anchors.centerIn: downloadSection
-                spacing: 20
+            Text {
+                id: downloadProgressLabel
+                text: qsTr("Downloading...")
+                font.bold: true
+                font.pixelSize: 16
+                anchors.left: progressBar.left
+                anchors.bottom: progressBar.bottom
+                anchors.bottomMargin: 5
+            }
 
-                ProgressBar {
-                    id: progressBar
-                    width: (downloadSection.width)*0.85
-                    height: 20
-                    anchors{
-                        margins: 10
-                        verticalCenter: parent.verticalCenter
-                    }
-                    from: 0
-                    to: 100
-                    value: 0.00   // example value
-                }
-                Text {
-                    id: progressText
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: progressBar.value + "%"
-                    font.bold: true
-                    font.pixelSize: 20
-                }
+            ProgressBar {
+                id: progressBar
+                width: (downloadSection.width)*0.7
+                anchors.top: downloadSection.top
+                anchors.topMargin: 30
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                from: 0
+                to: 100
+                value: 0.00   // example value
+            }
+            Text {
+                id: progressText
+                anchors.verticalCenter: progressBar.verticalCenter
+                anchors.left: progressBar.right
+                anchors.leftMargin: 10
+                text: progressBar.value + "%"
+                font.bold: true
+                font.pixelSize: 16
+            }
+
+
+            Text {
+                id: flashProgressLabel
+                text: qsTr("Flashing...")
+                font.bold: true
+                font.pixelSize: 16
+                anchors.left: flashProgressBar.left
+                anchors.bottom: flashProgressBar.bottom
+                anchors.bottomMargin: 5
+            }
+
+            ProgressBar {
+                id: flashProgressBar
+                width: (downloadSection.width)*0.7
+                anchors.top: progressBar.top
+                anchors.topMargin: 40
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                from: 0
+                to: 100
+                value: 0.00   // example value
+            }
+            Text {
+                id: progressText2
+                anchors.verticalCenter: flashProgressBar.verticalCenter
+                anchors.left: flashProgressBar.right
+                anchors.leftMargin: 10
+                text: flashProgressBar.value + "%"
+                font.bold: true
+                font.pixelSize: 16
             }
 
 
