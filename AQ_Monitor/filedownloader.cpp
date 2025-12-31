@@ -17,6 +17,8 @@ FileDownloader::FileDownloader(QObject *parent)
 void FileDownloader::checkOTA(QString _class)
 {
     downloadFlag = false;
+    currentFile = 0;
+
     QNetworkRequest request((QUrl("http://device.weatherdata.africa/ota/check?type=a&class="+_class)));
     manager.get(request);
 }

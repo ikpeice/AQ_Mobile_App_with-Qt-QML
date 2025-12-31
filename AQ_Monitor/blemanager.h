@@ -25,6 +25,7 @@ class BleManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QString receivedData READ receivedData NOTIFY receivedDataChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QString deviceID READ deviceID NOTIFY deviceIDChanged)
 
 public:
     explicit BleManager(QObject *parent = nullptr, FileDownloader *_fileDownloader = nullptr);
@@ -33,15 +34,20 @@ public:
     Q_INVOKABLE void sendData(const QString &text);
     Q_INVOKABLE QString dataReceived(){return packet.data;}
     Q_INVOKABLE double flashProgressReceived(){return flashingProgress;}
+    Q_INVOKABLE void resetDevice(void);
+    Q_INVOKABLE double downloadProgressReceived(){return downloadProgress;}
 
     QString receivedData() const { return packet.data; }//m_receivedData
     QString status() const { return m_status; }
     void requestBlePermissions();
+    QString deviceID() const {return m_deviceID;}
 
 signals:
     void receivedDataChanged();
     void statusChanged();
     void flashProgressChanged();
+    void downloadProgressChanged();
+    void deviceIDChanged();
 
 private slots:
     void deviceDiscovered(const QBluetoothDeviceInfo &info);
@@ -72,9 +78,12 @@ private:
 
     QString m_sendingData;
     QString m_status;
+    QString m_deviceID;
 
     bool bleStatus = false;
     double flashingProgress = 0.00;
+    double downloadProgress = 0.00;
+
 
     bool m_ready = false;
     bool m_dataAvailable = false;

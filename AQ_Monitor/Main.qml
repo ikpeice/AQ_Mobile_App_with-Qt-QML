@@ -27,7 +27,7 @@ Window {
     Connections{
         target: ble
         function onReceivedDataChanged(){
-            if(ble.dataReceived() === "GPS-200"){
+            if(ble.dataReceived() === "GPS-200 OK"){
                 gps.stop()
             }
 
@@ -36,6 +36,10 @@ Window {
 
         function onFlashProgressChanged(){
             flashProgressBar.value = ble.flashProgressReceived()
+        }
+
+        function onDownloadProgressChanged(){
+            progressBar.value = ble.downloadProgressReceived();
         }
     }
 
@@ -72,26 +76,36 @@ Window {
         }
 
         Text {
-            text: ble.status
+            text: "Device ID: "+ ble.deviceID
+            font.pixelSize: 16
+        }
+
+        Text {
+            text: "Status: "+ ble.status
             font.pixelSize: 16
         }
 
         Button {
-            text: "Scan & Connect"
+            text: qsTr("Scan & Connect")
             onClicked: ble.startScan()
         }
 
-        TextField {
-            id: input
-            placeholderText: "Send data"
-        }
-
-        Button {
-            text: "Send"
-            onClicked: {
-                ble.sendData(input.text)
+        Row{
+            width: parent.width
+            spacing: 5
+            TextField {
+                id: input
+                placeholderText: qsTr("Send data")
+                width: parent.width * 0.7
             }
 
+            Button {
+                text: "SEND"
+                onClicked: {
+                    ble.sendData(input.text)
+                }
+
+            }
         }
 
         Rectangle {
@@ -103,7 +117,7 @@ Window {
 
 
             ScrollView {
-                anchors.fill: parent
+                anchors.fill: txtArea
                 Text {
                     text: dataIn
                     wrapMode: Text.Wrap
@@ -192,5 +206,12 @@ Window {
 
         }
 
+        Button{
+            id: resetButton
+            text: qsTr("Reset Device");
+            onClicked: {
+                ble.resetDevice()
+            }
+        }
     }
 }

@@ -106,6 +106,10 @@ void BleManager::startBleScan()
 
 void BleManager::startScan()
 {
+    if(m_deviceID.length() !=  10){
+        setStatus("Invalid deviceID");
+        return;
+    }
     if(bleStatus == true){
         controller->disconnectFromDevice();
     }else{
@@ -122,7 +126,8 @@ void BleManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
 {
     qDebug() << "BLE:" << info.name() << info.address().toString();
 
-    if (info.name().contains("2iBA", Qt::CaseInsensitive)) {
+
+    if (info.name().contains(m_deviceID, Qt::CaseInsensitive)) {
         discoveryAgent->stop();
         setStatus("Connecting...");
 
@@ -162,10 +167,16 @@ void BleManager::controllerDisconnected()
 
 void BleManager::retryScan()
 {
-    QTimer::singleShot(4000, this, [this]() {
+    QTimer::singleShot(3000, this, [this]() {
         // discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
         startBleScan();
     });
+}
+
+void BleManager::resetDevice(void){
+    if(bleStatus){
+        sendData("reset");
+    }
 }
 
 
@@ -239,10 +250,10 @@ void BleManager::process_data(QString data){
             QString xLen = "0x"+QString(data[2]) + QString(data[3]);
             qDebug()<<"Len:"<<xLen;
             uint xlen= xLen.toUInt(nullptr, 16);
-            QString Len = "";
-            for(uint i=0; i<xlen; i++){
-                Len += QString(data[i+4]);
-            }
+            QString Len = data.mid(4, xlen);//"";
+            // for(uint i=0; i<xlen; i++){
+            //     Len += QString(data[i+4]);
+            // }
             packet.total_len = Len.toUInt();
             qDebug()<<"Total Len: "<<packet.total_len;
             send_ack();
@@ -296,6 +307,26 @@ void BleManager::process_data(QString data){
                     flashingProgress = obj.contains("flashing")? obj.value("flashing").toDouble(): 0.0;
                     emit flashProgressChanged();
                 }
+                else if(packet.data.contains("downloading")){
+                    QJsonParseError error;
+                    QJsonDocument doc = QJsonDocument::fromJson(
+                        packet.data.toUtf8(), &error);
+
+                    if (error.error != QJsonParseError::NoError) {
+                        qWarning() << "JSON parse error:" << error.errorString();
+                        return;
+                    }
+
+                    if (!doc.isObject()) {
+                        qWarning() << "JSON is not an object";
+                        return;
+                    }
+
+                    QJsonObject obj = doc.object();
+
+                    downloadProgress = obj.contains("downloading")? obj.value("downloading").toDouble(): 0.0;
+                    emit downloadProgressChanged();
+                }
                 else{
                     emit receivedDataChanged();
                 }
@@ -331,6 +362,11 @@ void BleManager::characteristicChanged(const QLowEnergyCharacteristic &,
 
 void BleManager::sendData(const QString &text)
 {
+    if(text.contains("id:")){
+        m_deviceID = text.mid(3,text.length()-3);
+        emit deviceIDChanged();
+        return;
+    }
     outPacket.data = text;
     outPacket.total_len = text.length();
     outPacket.current_len = 0;
