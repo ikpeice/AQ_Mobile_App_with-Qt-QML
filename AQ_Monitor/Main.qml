@@ -169,13 +169,54 @@ Window {
             }
         }
 
+        ComboBox{
+            id: deviceSelector
+            width:200
+            height: 50
+            font.bold: true
+            font.pixelSize: 14
+            property string selectedClass: ""
+
+            model: ["NONE","Class A", "Class B", "Class C","Class D", "Class E", "Class F"]
+
+            onCurrentTextChanged: {
+                //ble.setDeviceClass(currentText)
+                console.log("Selected:", currentText)
+                console.log("CurrentIndex: ", currentIndex)
+                if(currentIndex === 0){
+                    selectedClass = ""
+                } else if(currentIndex === 1){
+                    selectedClass = "a"
+                } else if(currentIndex === 2){
+                    selectedClass = "b"
+                } else if(currentIndex === 3){
+                    selectedClass = "c"
+                } else if(currentIndex === 4){
+                    selectedClass = "d"
+                } else if(currentIndex === 5){
+                    selectedClass = "e"
+                } else if(currentIndex === 6){
+                    selectedClass = "f"
+                }
+
+                if(currentIndex > 0){
+                    firmButton.enabled = true
+                } else {
+                    firmButton.enabled = false
+                }
+            }
+
+        }
+
         Button {
             id: firmButton
             text: "Load Firmware"
+            enabled: false
             onClicked: {
-                fileDownloader.startDownload("d");
+                fileDownloader.startDownload(deviceSelector.selectedClass)
             }
         }
+
         Rectangle {
             id: downloadSection
             width: parent.width

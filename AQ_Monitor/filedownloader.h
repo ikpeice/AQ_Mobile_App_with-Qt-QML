@@ -30,6 +30,7 @@ public:
     void downloadFile(void);
     void checkOTA(QString _class);
 
+
 public:
     QString chunckFile = "";
     UpdateInfo updateInfo;
