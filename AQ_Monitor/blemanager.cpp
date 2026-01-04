@@ -73,6 +73,7 @@ BleManager::BleManager(QObject *parent, FileDownloader *_fileDownloader)
             sendData(fileDownloader->chunckFile);
         }else{
             qDebug()<<"[BLE]: Disconnected";
+            qDebug()<<"ok";
         }
 
     });

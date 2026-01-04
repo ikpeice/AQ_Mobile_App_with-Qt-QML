@@ -3,7 +3,7 @@
 #include <QQmlContext>
 #include "blemanager.h"
 #include "filedownloader.h"
-
+#include "csvmodel.h"
 
 
 
@@ -16,11 +16,13 @@ int main(int argc, char *argv[])
 
     FileDownloader fileD(nullptr);
     BleManager ble(nullptr, &fileD);
+    CsvModel csvModel(nullptr);
 
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ble", &ble);
     engine.rootContext()->setContextProperty("fileDownloader", &fileD);
+    engine.rootContext()->setContextProperty("csvModel", &csvModel);
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,

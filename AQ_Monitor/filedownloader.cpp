@@ -106,5 +106,8 @@ bool FileDownloader::parseJson(const QString &jsonString)
     qDebug() << "total_chunks:" << updateInfo.totalChunks;
     qDebug() << "total_size:" << updateInfo.totalSize;
     qDebug() << "version:" << updateInfo.version;
+
     return true;
 }
+
+

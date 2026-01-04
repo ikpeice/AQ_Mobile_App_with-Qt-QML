@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtPositioning
 import QtCore
+import QtQuick.Dialogs
 
 Window {
     width: 720
@@ -51,7 +52,7 @@ Window {
         onPositionChanged: {
             console.log("Latitude:", position.coordinate.latitude)
             console.log("Longitude:", position.coordinate.longitude)
-            console.log("Accuracy:",position.timestamp)
+
             latitude = position.coordinate.latitude
             longitude = position.coordinate.longitude
             ble.sendData("location:{lat: "+latitude.toFixed(6)+",lon: "+longitude.toFixed(6)+",}")
@@ -66,6 +67,13 @@ Window {
         }
     }
 
+    FileDialog {
+        id: fileDialog
+        title: "Select CSV File"
+        nameFilters: ["CSV files (*.csv)"]
+        onAccepted: csvModel.loadCsv(selectedFile)
+    }
+
     Column {
         anchors.centerIn: parent
         spacing: 10
@@ -78,6 +86,7 @@ Window {
         Text {
             text: "Device ID: "+ ble.deviceID
             font.pixelSize: 16
+            font.bold: true
         }
 
         Text {
@@ -91,21 +100,56 @@ Window {
         }
 
         Row{
-            width: parent.width
-            spacing: 5
-            TextField {
-                id: input
-                placeholderText: qsTr("Send data")
-                width: parent.width * 0.7
-            }
+            // width: parent.width
+            // spacing: 5
+            // TextField {
+            //     id: input
+            //     placeholderText: qsTr("Send data")
+            //     width: parent.width * 0.7
+            // }
+
+            // Button {
+            //     text: "SEND"
+            //     onClicked: {
+            //         ble.sendData(input.text)
+            //     }
+
+            // }
+
 
             Button {
-                text: "SEND"
-                onClicked: {
-                    ble.sendData(input.text)
+                text: "Open CSV"
+                onClicked: fileDialog.open()
+            }
+
+            ComboBox {
+                id: rowDropdown
+                width: parent.width
+                model: csvModel
+
+                textRole: "rowData"
+
+                // Display row nicely
+                delegate: ItemDelegate {
+                    width: parent.width
+                    text: rowData.join(" | ")
                 }
 
+                onCurrentIndexChanged: {
+                    if (currentIndex >= 0) {
+                        let row = csvModel.get(currentIndex).rowData
+                        console.log("Selected row:", row)
+                    }
+                }
             }
+
+            Text {
+                text: rowDropdown.currentIndex >= 0
+                      ? "Selected: " + csvModel.get(rowDropdown.currentIndex).rowData.join(", ")
+                      : "No row selected"
+                wrapMode: Text.Wrap
+            }
+
         }
 
         Rectangle {
