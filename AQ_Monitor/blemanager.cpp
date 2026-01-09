@@ -107,7 +107,7 @@ void BleManager::startBleScan()
 
 void BleManager::startScan()
 {
-    if(m_deviceID.length() !=  10){
+    if(m_deviceID.length() == 0){
         setStatus("Invalid deviceID");
         return;
     }
@@ -149,7 +149,7 @@ void BleManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
 void BleManager::scanFinished()
 {
     setStatus("Scan finished");
-    retryScan();
+    if(autoConnectEnabled)retryScan();
 }
 
 void BleManager::controllerConnected()
@@ -163,7 +163,7 @@ void BleManager::controllerDisconnected()
 {
     setStatus("Disconnected");
     bleStatus = false;
-    retryScan();
+    if(autoConnectEnabled)retryScan();
 }
 
 void BleManager::retryScan()
@@ -363,8 +363,8 @@ void BleManager::characteristicChanged(const QLowEnergyCharacteristic &,
 
 void BleManager::sendData(const QString &text)
 {
-    if(text.contains("id:")){
-        m_deviceID = text.mid(3,text.length()-3);
+    if(text.contains("id_:")){
+        m_deviceID = text.mid(4,text.length()-4);
         emit deviceIDChanged();
         return;
     }

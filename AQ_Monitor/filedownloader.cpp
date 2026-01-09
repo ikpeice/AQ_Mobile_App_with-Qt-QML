@@ -35,6 +35,7 @@ void FileDownloader::onFinished(QNetworkReply *reply)
     if (reply->error() != QNetworkReply::NoError) {
         emit downloadError(reply->errorString());
         reply->deleteLater();
+        qDebug() << "Download failed:" << reply->errorString();
         return;
     }
 
@@ -108,6 +109,26 @@ bool FileDownloader::parseJson(const QString &jsonString)
     qDebug() << "version:" << updateInfo.version;
 
     return true;
+}
+
+
+void FileDownloader::downloadCsvFile() {
+    QNetworkAccessManager *_manager = new QNetworkAccessManager();
+
+    QObject::connect(_manager, &QNetworkAccessManager::finished, [this, _manager](QNetworkReply *reply) {
+        if(reply->error() == QNetworkReply::NoError) {
+           csvFile = reply->readAll();
+            qDebug() << "CSV file downloaded successfully.";
+            emit csvDownloaded();
+        } else {
+            qDebug() << "Download error:" << reply->errorString();
+        }
+        reply->deleteLater();
+        _manager->deleteLater();
+    });
+
+    QNetworkRequest request(csvDataURL);
+    _manager->get(request);
 }
 
 

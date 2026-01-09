@@ -7,7 +7,13 @@
 
 
 
-
+QString getPublicCsvFolder() {
+#ifdef Q_OS_ANDROID
+    return "/storage/emulated/0/Documents"; // Public folder
+#else
+    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+#endif
+}
 
 
 int main(int argc, char *argv[])
@@ -16,13 +22,17 @@ int main(int argc, char *argv[])
 
     FileDownloader fileD(nullptr);
     BleManager ble(nullptr, &fileD);
-    CsvModel csvModel(nullptr);
+    CsvModel csvModel(nullptr, &fileD);
+    // Get the user-accessible documents folder
+    QString publicPath = getPublicCsvFolder();//QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    // QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 
-
+    // Expose to QML
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ble", &ble);
     engine.rootContext()->setContextProperty("fileDownloader", &fileD);
     engine.rootContext()->setContextProperty("csvModel", &csvModel);
+    engine.rootContext()->setContextProperty("DocumentsFolder", publicPath);
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,

@@ -25,16 +25,21 @@ public:
         deviceClass = _class;
         checkOTA(_class);
     }
+    Q_INVOKABLE void fetchCsvFile(){
+        downloadCsvFile();
+    }
 
     Q_INVOKABLE double percentageProgress() const {return downloadProgress;}
     void downloadFile(void);
     void checkOTA(QString _class);
 
 
+
 public:
     QString chunckFile = "";
     UpdateInfo updateInfo;
     double currentFile = 0;
+    QString csvFile = "";
 
 signals:
     void downloadFinished();
@@ -42,11 +47,13 @@ signals:
     void headerFound();
     void downloadError(const QString &error);
     void percentageProgressChanged();
+    void csvDownloaded();
 
 private slots:
     void onFinished(QNetworkReply *reply);
 
     bool parseJson(const QString &jsonString);
+    void downloadCsvFile();
     // UpdateInfo decodeUpdateJson(const QString json);
 
 private:
@@ -57,6 +64,8 @@ private:
     uint totalFile = 0;
 
     bool downloadFlag = false;
+
+    const QString csvDataURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9AX4IyrB_v27aTarpj11L-U-6RVPPBLynF4wFLlPiBDQk85k1FrGg-KSjg4RsNj16pWeVnyXUi-zZ/pub?gid=0&single=true&output=csv";
 
 
 };

@@ -36,6 +36,16 @@ public:
     Q_INVOKABLE double flashProgressReceived(){return flashingProgress;}
     Q_INVOKABLE void resetDevice(void);
     Q_INVOKABLE double downloadProgressReceived(){return downloadProgress;}
+    Q_INVOKABLE void isNewDevice(bool state){
+        if(state){
+            m_deviceID = "HC-42"; emit deviceIDChanged(); deviceID() = m_deviceID;
+        }else{
+            m_deviceID = ""; emit deviceIDChanged(); deviceID() = m_deviceID;
+        }
+    }
+    Q_INVOKABLE void autoScanConnect(bool state){
+        autoConnectEnabled = state;
+    }
 
     QString receivedData() const { return packet.data; }//m_receivedData
     QString status() const { return m_status; }
@@ -81,6 +91,7 @@ private:
     QString m_deviceID;
 
     bool bleStatus = false;
+    bool autoConnectEnabled = false;
     double flashingProgress = 0.00;
     double downloadProgress = 0.00;
 
