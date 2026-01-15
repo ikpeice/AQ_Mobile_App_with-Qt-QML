@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/AQ_Monitor">
-    <file alias="qmldir">C:/Users/echij/OneDrive/Documents/QtCreatorStudio/AQ_Monitor/build/Android_Qt_6_9_0_Clang_arm64_v8a-Debug/AQ_Monitor/qmldir</file>
-  </qresource>
-</RCC>
-
