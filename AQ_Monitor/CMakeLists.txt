@@ -31,6 +31,7 @@ qt_add_qml_module(appAQ_Monitor
     QML_FILES
         Main.qml
         QML_FILES SetupView.qml
+        QML_FILES Monitor.qml
         # SOURCES blemanager.h blemanager.cpp
         # SOURCES
         # SOURCES filedownloader.h filedownloader.cpp

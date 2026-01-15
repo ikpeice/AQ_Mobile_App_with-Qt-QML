@@ -17,6 +17,10 @@ Item {
         }
     }
 
+    // Component.onCompleted: {
+    //     mainColumn.visible = false
+    // }
+
     Connections{
         target: ble
         function onReceivedDataChanged(){
@@ -75,11 +79,47 @@ Item {
         }
     }
 
+    Rectangle {
+        id: backgroundRect
+        anchors.fill: parent
+        color: "#f0f0f0"
+    }
+
+    Rectangle{
+        id: navigationBar
+        width: parent.width
+        height: 50
+        color: "#7ab4fa"
+        Text{
+            text: "Device Setup"
+            anchors.centerIn: parent
+            font.pixelSize: 20
+            font.bold: true
+            color: "white"
+        }
+        Button {
+            id: backButton
+            text: "<< Back"
+            height: parent.height * 0.7
+            anchors{
+                left: parent.left
+                leftMargin: 5
+                verticalCenter: parent.verticalCenter
+            }
+
+            onClicked: {
+                monitorView1.z = -1
+                setupView1.z = -1
+            }
+        }
+    }
+
     Column {
-        anchors.centerIn: parent
         spacing: 5
         width: parent.width *0.9
         anchors{
+            horizontalCenter: parent.horizontalCenter
+            top: navigationBar.bottom
             leftMargin: 20
             rightMargin: 20
         }
