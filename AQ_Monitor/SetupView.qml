@@ -27,11 +27,19 @@ Item {
             if(ble.dataReceived() === "GPS-200 OK"){
                 gps.stop()
             }else if(ble.dataReceived() === "online"){
-                //ble.status = "Online"
-                statusText.text = "Status: Device Online"
+                mainWindow.indicatorColor = "#4CAF50"
+                //statusText.text = "Status: Device Online"
             }
 
             dataIn += ble.dataReceived() + "\n"
+        }
+
+        function onBleConnectedChanged(){
+            if(ble.bleConnected()){
+                mainWindow.indicatorColor = "#4CAF50"
+            } else {
+                mainWindow.indicatorColor = "#db3232"
+            }
         }
 
         function onFlashProgressChanged(){
@@ -96,6 +104,18 @@ Item {
             font.pixelSize: 20
             font.bold: true
             color: "white"
+        }
+        Rectangle{
+            id: onlineIndicator2
+            width: 20
+            height: 20
+            radius: 10
+            color: mainWindow.indicatorColor
+            anchors{
+                right: parent.right
+                rightMargin: 10
+                verticalCenter: parent.verticalCenter
+            }
         }
         Button {
             id: backButton
@@ -220,12 +240,12 @@ Item {
         }
 
 
-
         Text {
             id: statusText
             text: "Status: "+ ble.status
             font.pixelSize: 16
         }
+
 
         Row{
             id: scanRow
@@ -311,7 +331,7 @@ Item {
             font.pixelSize: 14
             property string selectedClass: ""
 
-            model: ["Select Class","Class A", "Class B", "Class C","Class D", "Class E", "Class F"]
+            model: ["Select Class","Class A", "Class B", "Class C","Class D", "Class E", "Class F", "Class G"]
 
             onCurrentTextChanged: {
                 //ble.setDeviceClass(currentText)
@@ -331,6 +351,8 @@ Item {
                     selectedClass = "e"
                 } else if(currentIndex === 6){
                     selectedClass = "f"
+                } else if(currentIndex === 7){
+                    selectedClass = "g"
                 }
 
                 if(currentIndex > 0){

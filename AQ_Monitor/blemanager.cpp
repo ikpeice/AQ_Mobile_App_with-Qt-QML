@@ -157,6 +157,7 @@ void BleManager::controllerConnected()
     bleStatus = true;
     setStatus("Connected, discovering services...");
     controller->discoverServices();
+    emit bleConnectedChanged();
 }
 
 void BleManager::controllerDisconnected()
@@ -164,6 +165,7 @@ void BleManager::controllerDisconnected()
     setStatus("Disconnected");
     bleStatus = false;
     if(autoConnectEnabled)retryScan();
+    emit bleConnectedChanged();
 }
 
 void BleManager::retryScan()
@@ -351,6 +353,10 @@ void BleManager::process_data(QString data){
             qDebug()<<"ACK found";
         }
 
+    }else{
+        qDebug()<<"Invalid packet";
+        m_debugData = data;
+        emit debugDataChanged();
     }
 }
 
@@ -368,6 +374,15 @@ void BleManager::sendData(const QString &text)
         emit deviceIDChanged();
         return;
     }
+    if(text.contains("debug:")){
+        uartService->writeCharacteristic(
+            uartChar,
+            text.toUtf8(),
+            QLowEnergyService::WriteWithoutResponse
+            );
+        return;
+    }
+
     outPacket.data = text;
     outPacket.total_len = text.length();
     outPacket.current_len = 0;

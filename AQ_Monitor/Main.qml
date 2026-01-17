@@ -13,6 +13,7 @@ Window {
     property string dataIn: ""
     property double latitude: 0
     property double longitude: 0
+    property string indicatorColor: "#db3232"//"#4CAF50"
 
     Component.onCompleted: {
         console.log("OS:", Qt.platform.os)
@@ -40,7 +41,7 @@ Window {
 
             Button {
                 id: monitorButton
-                text: "Start Monitoring"
+                text: "Open Monitoring"
                 width: mainColumn.width
                 onClicked: {
                     setupView1.z = -1

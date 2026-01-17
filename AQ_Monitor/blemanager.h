@@ -46,6 +46,8 @@ public:
     Q_INVOKABLE void autoScanConnect(bool state){
         autoConnectEnabled = state;
     }
+    Q_INVOKABLE bool bleConnected(){return bleStatus;}
+    Q_INVOKABLE QString debugData(){return m_debugData;}
 
     QString receivedData() const { return packet.data; }//m_receivedData
     QString status() const { return m_status; }
@@ -58,6 +60,8 @@ signals:
     void flashProgressChanged();
     void downloadProgressChanged();
     void deviceIDChanged();
+    void bleConnectedChanged();
+    void debugDataChanged();
 
 private slots:
     void deviceDiscovered(const QBluetoothDeviceInfo &info);
@@ -89,6 +93,7 @@ private:
     QString m_sendingData;
     QString m_status;
     QString m_deviceID;
+    QString m_debugData;
 
     bool bleStatus = false;
     bool autoConnectEnabled = false;
