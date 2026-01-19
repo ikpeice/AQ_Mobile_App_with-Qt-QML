@@ -19,6 +19,38 @@ Window {
         console.log("OS:", Qt.platform.os)
     }
 
+    function enableView(viewIndex){
+        if(viewIndex === 1){
+            monitorView1.z = -1
+            monitorView1.enabled = false
+
+            sensorView.z = -1
+            sensorView.enabled = false
+
+            setupView1.z = 3
+            setupView1.enabled = true
+
+        }else if(viewIndex === 2){
+            setupView1.z = -1
+            setupView1.enabled = false
+
+            sensorView.z = -1
+            sensorView.enabled = false
+
+            monitorView1.z = 3
+            monitorView1.enabled = true
+        }else if(viewIndex === 3){
+            setupView1.z = -1
+            setupView1.enabled = false
+
+            monitorView1.z = -1
+            monitorView1.enabled = false
+
+            sensorView.z = 3
+            sensorView.enabled = true
+        }
+    }
+
     Rectangle {
         id: backgroundRect
         anchors.fill: parent
@@ -34,9 +66,7 @@ Window {
                 text: "Device Setup"
                 width: mainColumn.width
                 onClicked: {
-                    monitorView1.z = -1
-                    sensorView.z = -1
-                    setupView1.z = 3
+                    enableView(1)
                 }
             }
 
@@ -45,9 +75,7 @@ Window {
                 text: "Open Monitoring"
                 width: mainColumn.width
                 onClicked: {
-                    setupView1.z = -1
-                    sensorView.z = -1
-                    monitorView1.z = 3
+                    enableView(2)
                 }
             }
 
@@ -56,9 +84,7 @@ Window {
                 text: "Sensor View"
                 width: mainColumn.width
                 onClicked: {
-                    setupView1.z = -1
-                    monitorView1.z = -1
-                    sensorView.z = 3
+                    enableView(3)
                 }
             }
         }

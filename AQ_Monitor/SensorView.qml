@@ -5,8 +5,7 @@ Item {
 
     id: sensorViewRoot
 
-
-    property string pm25Data: "--.--"
+    property double pm25Data: 00.00
     property string pm10Data: "--.--"
     property string tempData: "--.--"
     property string humidityData: "--.--"
@@ -20,6 +19,32 @@ Item {
     property string o3Data: "--.--"
     property string so2Data: "--.--"
     property string ch2oData: "--.--"
+
+    Connections{
+        target: ble
+
+        function onSensorsDataChanged(){
+        //     pm25Data = ble.sensorsData.pm25
+        //     pm10Data = ble.sensorsData.pm10
+        //     tempData = ble.sensorsData.temp
+        //     humidityData = ble.sensorsData.humi
+        //     try{
+        //         vocData = ble.sensorsData.voc
+        //     } catch(e){
+        //         console.log("VOC data error:", e)
+        //         vocData = "--.--"
+        //     }
+        //     co2Data = ble.sensorsData.co2
+        //     batteryData = ble.sensorsData.bat
+        //     pressureData = ble.sensorsData.pres
+        //     coData = ble.sensorsData.co
+        //     ch4Data = ble.sensorsData.ch4
+        //     no2Data = ble.sensorsData.no2
+        //     o3Data = ble.sensorsData.o3
+        //     so2Data = ble.sensorsData.so2
+        //     ch2oData = ble.sensorsData.ch2o
+        }
+    }
 
     Rectangle {
         id: backgroundRect
@@ -89,38 +114,38 @@ Item {
                 SensorCard{
                     id: pm25Card
                     sensorName: "PM2.5 (ppm)"
-                    sensorValue: pm25Data
+                    sensorValue: ble.sensorsData.pm25
                 }
 
                 SensorCard{
                     id: pm10Card
                     sensorName: "PM10 (ppm)"
-                    sensorValue: pm10Data
+                    sensorValue: ble.sensorsData.pm10
                 }
                 SensorCard{
                     id: tempCard
                     sensorName: "Temperature (°C)"
-                    sensorValue: tempData
+                    sensorValue: ble.sensorsData.temp
                 }
                 SensorCard{
                     id: co2Card
                     sensorName: "CO2 (ppm)"
-                    sensorValue: co2Data
+                    sensorValue: ble.sensorsData.co2
                 }
                 SensorCard{
                     id: coCard
                     sensorName: "CO (ppm)"
-                    sensorValue: coData
+                    sensorValue: ble.sensorsData.co
                 }
                 SensorCard{
                     id: ch4Card
                     sensorName: "CH4 (ppm)"
-                    sensorValue: ch4Data
+                    sensorValue: ble.sensorsData.ch4
                 }
                 SensorCard{
                     id: ch2oCard
                     sensorName: "CH2O (ppm)"
-                    sensorValue: ch2oData
+                    sensorValue: ble.sensorsData.ch2o
                 }
 
             }
@@ -132,37 +157,37 @@ Item {
                 SensorCard{
                     id: humidityCard
                     sensorName: "Humidity (%)"
-                    sensorValue: humidityData
+                    sensorValue: ble.sensorsData.humi
                 }
                 SensorCard{
                     id: vocCard
                     sensorName: "VOC (index)"
-                    sensorValue: vocData
+                    sensorValue: ble.sensorsData.voc
                 }
                 SensorCard{
                     id: pressureCard
                     sensorName: "Pressure (hPa)"
-                    sensorValue: pressureData
+                    sensorValue: ble.sensorsData.pres
                 }
                 SensorCard{
                     id: batteryCard
                     sensorName: "Battery (%)"
-                    sensorValue: batteryData
+                    sensorValue: ble.sensorsData.bat
                 }
                 SensorCard{
                     id: no2Card
                     sensorName: "NO2 (ppm)"
-                    sensorValue: no2Data
+                    sensorValue: ble.sensorsData.no2
                 }
                 SensorCard{
                     id: o3Card
                     sensorName: "O3 (ppm)"
-                    sensorValue: o3Data
+                    sensorValue: ble.sensorsData.o3
                 }
                 SensorCard{
                     id: so2Card
                     sensorName: "SO2 (ppm)"
-                    sensorValue: so2Data
+                    sensorValue: ble.sensorsData.so2
                 }
             }
         }

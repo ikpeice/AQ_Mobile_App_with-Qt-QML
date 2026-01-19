@@ -330,6 +330,25 @@ void BleManager::process_data(QString data){
                     downloadProgress = obj.contains("downloading")? obj.value("downloading").toDouble(): 0.0;
                     emit downloadProgressChanged();
                 }
+                else if(packet.data.contains("sensorData")){
+                    QJsonParseError error;
+                    QJsonDocument doc = QJsonDocument::fromJson(
+                        packet.data.toUtf8(), &error);
+
+                    if (error.error != QJsonParseError::NoError) {
+                        qWarning() << "JSON parse error:" << error.errorString();
+                        return;
+                    }
+
+                    if (!doc.isObject()) {
+                        qWarning() << "JSON is not an object";
+                        return;
+                    }
+
+                    m_sensorsData = doc.object().toVariantMap();
+                    emit sensorsDataChanged();
+
+                }
                 else{
                     emit receivedDataChanged();
                 }

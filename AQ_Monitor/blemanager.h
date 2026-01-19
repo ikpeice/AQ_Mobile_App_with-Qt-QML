@@ -26,6 +26,7 @@ class BleManager : public QObject
     Q_PROPERTY(QString receivedData READ receivedData NOTIFY receivedDataChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString deviceID READ deviceID NOTIFY deviceIDChanged)
+    Q_PROPERTY(QVariantMap sensorsData READ sensorsData NOTIFY sensorsDataChanged)
 
 public:
     explicit BleManager(QObject *parent = nullptr, FileDownloader *_fileDownloader = nullptr);
@@ -48,6 +49,8 @@ public:
     }
     Q_INVOKABLE bool bleConnected(){return bleStatus;}
     Q_INVOKABLE QString debugData(){return m_debugData;}
+    Q_INVOKABLE QVariantMap sensorsData() const { return m_sensorsData; }
+    Q_INVOKABLE QVariantList getSensorList() const { return m_sensorList;}
 
     QString receivedData() const { return packet.data; }//m_receivedData
     QString status() const { return m_status; }
@@ -62,6 +65,7 @@ signals:
     void deviceIDChanged();
     void bleConnectedChanged();
     void debugDataChanged();
+    void sensorsDataChanged();
 
 private slots:
     void deviceDiscovered(const QBluetoothDeviceInfo &info);
@@ -94,6 +98,8 @@ private:
     QString m_status;
     QString m_deviceID;
     QString m_debugData;
+    QVariantMap m_sensorsData;
+    QVariantList m_sensorList;
 
     bool bleStatus = false;
     bool autoConnectEnabled = false;
