@@ -32,6 +32,8 @@ qt_add_qml_module(appAQ_Monitor
         Main.qml
         QML_FILES SetupView.qml
         QML_FILES Monitor.qml
+        QML_FILES SensorView.qml
+        QML_FILES SensorCard.qml
         # SOURCES blemanager.h blemanager.cpp
         # SOURCES
         # SOURCES filedownloader.h filedownloader.cpp

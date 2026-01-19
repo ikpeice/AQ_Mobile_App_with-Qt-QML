@@ -35,6 +35,7 @@ Window {
                 width: mainColumn.width
                 onClicked: {
                     monitorView1.z = -1
+                    sensorView.z = -1
                     setupView1.z = 3
                 }
             }
@@ -45,7 +46,19 @@ Window {
                 width: mainColumn.width
                 onClicked: {
                     setupView1.z = -1
+                    sensorView.z = -1
                     monitorView1.z = 3
+                }
+            }
+
+            Button {
+                id: sensorViewButton
+                text: "Sensor View"
+                width: mainColumn.width
+                onClicked: {
+                    setupView1.z = -1
+                    monitorView1.z = -1
+                    sensorView.z = 3
                 }
             }
         }
@@ -66,6 +79,16 @@ Window {
 
     Monitor {
         id: monitorView1
+        width: mainWindow.width
+        height: mainWindow.height
+        z: -1
+        anchors{
+            top: parent.top
+        }
+    }
+
+    SensorView{
+        id: sensorView
         width: mainWindow.width
         height: mainWindow.height
         z: -1
