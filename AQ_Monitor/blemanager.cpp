@@ -346,6 +346,11 @@ void BleManager::process_data(QString data){
                     }
 
                     m_sensorsData = doc.object().toVariantMap();
+                    QString list = m_sensorsData["sensorList"].toString();
+                    m_sensorList.clear();
+                    for(QChar c : list){
+                        m_sensorList.append(c.digitValue());
+                    }
                     emit sensorsDataChanged();
 
                 }
@@ -394,6 +399,14 @@ void BleManager::sendData(const QString &text)
         return;
     }
     if(text.contains("debug:")){
+        uartService->writeCharacteristic(
+            uartChar,
+            text.toUtf8(),
+            QLowEnergyService::WriteWithoutResponse
+            );
+        return;
+    }
+    if(text.contains("testMode:")){
         uartService->writeCharacteristic(
             uartChar,
             text.toUtf8(),
