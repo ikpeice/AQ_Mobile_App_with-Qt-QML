@@ -331,7 +331,7 @@ Item {
             font.pixelSize: 14
             property string selectedClass: ""
 
-            model: ["Select Class","Class A", "Class B", "Class C","Class D", "Class E", "Class F", "Class G"]
+            model: ["Select Class","Class A", "Class B", "Class C","Class D", "Class E", "Class F", "Class G", "Class H", "Class I", "Class J"]
 
             onCurrentTextChanged: {
                 //ble.setDeviceClass(currentText)
@@ -353,6 +353,12 @@ Item {
                     selectedClass = "f"
                 } else if(currentIndex === 7){
                     selectedClass = "g"
+                } else if(currentIndex === 8){
+                    selectedClass = "h"
+                } else if(currentIndex === 9){
+                    selectedClass = "i"
+                } else if(currentIndex === 10){
+                    selectedClass = "j"
                 }
 
                 if(currentIndex > 0){

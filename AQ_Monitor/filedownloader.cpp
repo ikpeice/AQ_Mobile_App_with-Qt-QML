@@ -36,6 +36,11 @@ void FileDownloader::onFinished(QNetworkReply *reply)
         emit downloadError(reply->errorString());
         reply->deleteLater();
         qDebug() << "Download failed:" << reply->errorString();
+        if(downloadFlag == true){
+            currentFile -=1;
+            downloadFile();
+        }
+
         return;
     }
 
