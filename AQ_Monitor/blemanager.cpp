@@ -2,8 +2,10 @@
 #include <QDebug>
 #include <QTimer>
 
+#ifdef Q_OS_ANDROID
 #include <QJniObject>
 #include <QJniEnvironment>
+#endif
 #include <QStringList>
 #include <QBluetoothPermission>
 #include <QPermission>
@@ -93,20 +95,53 @@ void BleManager::setStatus(const QString &s)
 
 void BleManager::startBleScan()
 {
+    // auto *agent = new QBluetoothDeviceDiscoveryAgent(this);
+    // agent->setLowEnergyDiscoveryTimeout(5000);
+
+    // discoveryAgent = agent;
+    // connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+    //         this, &BleManager::deviceDiscovered);
+    // connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
+    //         this, &BleManager::scanFinished);
+
+    // agent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+    // qDebug()<<"\nScan started";
+
+    qDebug() << "startBleScan called";
+
     auto *agent = new QBluetoothDeviceDiscoveryAgent(this);
     agent->setLowEnergyDiscoveryTimeout(5000);
 
     discoveryAgent = agent;
+
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, &BleManager::deviceDiscovered);
+
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
             this, &BleManager::scanFinished);
 
-    agent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred,
+            this, [](auto error){
+                qDebug() << "Scan error:" << error;
+            });
+
+    agent->start();   // IMPORTANT: Use full scan on Windows
+
+    qDebug() << "Scan started";
 }
 
 void BleManager::startScan()
 {
+    QBluetoothLocalDevice localDevice;
+
+    if (localDevice.isValid()) {
+        qDebug() << "Bluetooth available";
+        localDevice.powerOn();
+    } else {
+        qDebug() << "No Bluetooth adapter found!";
+        //return;
+    }
+
     if(m_deviceID.length() == 0){
         setStatus("Invalid deviceID");
         return;
@@ -114,11 +149,15 @@ void BleManager::startScan()
     if(bleStatus == true){
         controller->disconnectFromDevice();
     }else{
+#ifdef Q_OS_ANDROID
         requestQtBlePermission(this, [this]() {
             setStatus("Scanning...");
-            // discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
             startBleScan();
         });
+#else
+        setStatus("Scanning...");
+        startBleScan();
+#endif
     }
 
 }

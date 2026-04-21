@@ -1,8 +1,11 @@
 #include "csvmodel.h"
 #include <QFile>
 #include <QTextStream>
+
+#ifdef Q_OS_ANDROID
 #include <qjniobject.h>
 #include <QJniEnvironment>
+#endif
 
 #ifdef Q_OS_ANDROID
 void requestStoragePermission()
@@ -58,7 +61,9 @@ void requestStoragePermission()
 #endif
 
 CsvModel::CsvModel(QObject *parent, FileDownloader *_fileDownloader) : QAbstractListModel(parent) {
+#ifdef Q_OS_ANDROID
     requestStoragePermission();
+#endif
 }
 
 int CsvModel::rowCount(const QModelIndex &) const
@@ -86,10 +91,14 @@ QHash<int, QByteArray> CsvModel::roleNames() const
 
 bool CsvModel::loadCsv(const QString &filePath)
 {
+    QString localPath = filePath;
 
-    QFile file(filePath);
+    if (filePath.startsWith("file://"))
+        localPath = QUrl(filePath).toLocalFile();
+
+    QFile file(localPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        qDebug() << "Failed to open file:" << filePath;
+        qDebug() << "Failed to open file:" << localPath;
         return false;
     }
 
